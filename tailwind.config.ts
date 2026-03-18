@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Creepster', 'cursive'],
-        narrative: ['Special Elite', 'cursive'],
+        display: ['Permanent Marker', 'cursive'],
+        narrative: ['Architects Daughter', 'cursive'],
         body: ['Inter', 'sans-serif'],
       },
       colors: {

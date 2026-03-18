@@ -87,4 +87,26 @@ export const COLOR_LABELS: Record<string, string> = {
 };
 
 export const GLASSWARE_OPTIONS = ["Erlenmeyer", "Tubo de ensaio", "Béquer", "Balão de fundo chato", "Proveta", "Funil", "Pisseta", "Vidro de relógio", "Pipeta"];
+
+export interface LabHotspot {
+  id: number;
+  clueId: number;
+  label: string;
+  icon: string;
+  /** Position as percentage of image width/height */
+  x: number;
+  y: number;
+}
+
+// Hotspots positioned on the lab panorama image - easy to find locations
+export const LAB_HOTSPOTS: LabHotspot[] = [
+  { id: 1, clueId: 1, label: "Quadro de giz", icon: "📝", x: 48, y: 22 },
+  { id: 2, clueId: 2, label: "Bancada do professor", icon: "🧪", x: 48, y: 55 },
+  { id: 3, clueId: 3, label: "Armário de vidrarias", icon: "🗄️", x: 18, y: 38 },
+  { id: 4, clueId: 4, label: "Mesa do aluno (esquerda)", icon: "📋", x: 15, y: 62 },
+  { id: 5, clueId: 5, label: "Capela de exaustão", icon: "🔬", x: 75, y: 35 },
+  { id: 6, clueId: 6, label: "Estante de livros", icon: "📚", x: 90, y: 32 },
+  { id: 7, clueId: 7, label: "Gaveta da bancada", icon: "🗃️", x: 78, y: 58 },
+  { id: 8, clueId: 8, label: "Mesa do aluno (direita)", icon: "📄", x: 82, y: 72 },
+];
 export const COMPOUND_OPTIONS = ["Ácido clorídrico", "Hidróxido de sódio", "Cloreto de sódio", "Dióxido de carbono"];
