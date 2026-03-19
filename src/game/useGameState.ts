@@ -1,15 +1,21 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { GameState, CLUES, INITIAL_CABINET_SLOTS } from "./gameData";
+import { GameState, CLUES, INITIAL_CABINET_SLOTS, AvatarType } from "./gameData";
 
-const GAME_TIME = 60 * 60; // 60 minutes
+const GAME_TIME = 60 * 60;
+
+function normalize(s: string) {
+  return s.toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 
 export function useGameState() {
   const [state, setState] = useState<GameState>({
-    phase: "name",
+    phase: "avatar",
+    avatar: "boy",
     playerName: "",
     clues: CLUES.map(c => ({ ...c })),
     errors: 0,
-    maxErrors: 3,
+    maxErrors: 5,
     timeLeft: GAME_TIME,
     cabinetSlots: INITIAL_CABINET_SLOTS.map(s => ({ ...s })),
     showHint: false,
@@ -42,6 +48,10 @@ export function useGameState() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
+  const setAvatar = useCallback((avatar: AvatarType) => {
+    setState(prev => ({ ...prev, avatar }));
+  }, []);
+
   const setPlayerName = useCallback((name: string) => {
     setState(prev => ({ ...prev, playerName: name }));
   }, []);
@@ -62,7 +72,11 @@ export function useGameState() {
   const answerClue = useCallback((clueId: number, answer: string): boolean => {
     const clue = state.clues.find(c => c.id === clueId);
     if (!clue) return false;
-    const correct = answer.toLowerCase().trim() === clue.answer.toLowerCase().trim();
+    
+    const normalizedAnswer = normalize(answer);
+    const correct = normalize(clue.answer) === normalizedAnswer ||
+      clue.alternateAnswers.some(alt => normalize(alt) === normalizedAnswer);
+    
     if (correct) {
       setState(prev => ({
         ...prev,
@@ -86,7 +100,8 @@ export function useGameState() {
     setState(prev => {
       const newSlots = prev.cabinetSlots.map(s => {
         if (s.color === color) {
-          const correct = glassware === s.correctGlassware && compound === s.correctCompound;
+          const correct = normalize(glassware) === normalize(s.correctGlassware) && 
+                          normalize(compound) === normalize(s.correctCompound);
           isCorrect = correct;
           if (correct) {
             return { ...s, glassware, compound, filled: true, correct: true };
@@ -122,11 +137,12 @@ export function useGameState() {
   const resetGame = useCallback(() => {
     stopTimer();
     setState({
-      phase: "name",
+      phase: "avatar",
+      avatar: "boy",
       playerName: "",
       clues: CLUES.map(c => ({ ...c })),
       errors: 0,
-      maxErrors: 3,
+      maxErrors: 5,
       timeLeft: GAME_TIME,
       cabinetSlots: INITIAL_CABINET_SLOTS.map(s => ({ ...s })),
       showHint: false,
@@ -135,6 +151,7 @@ export function useGameState() {
 
   return {
     state,
+    setAvatar,
     setPlayerName,
     goToPhase,
     findClue,

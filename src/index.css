@@ -2,48 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Architects+Daughter&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Architects+Daughter&family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 150 20% 6%;
-    --foreground: 150 20% 92%;
+    --background: 150 25% 5%;
+    --foreground: 150 15% 90%;
 
-    --card: 150 15% 10%;
-    --card-foreground: 150 20% 92%;
+    --card: 150 20% 8%;
+    --card-foreground: 150 15% 90%;
 
-    --popover: 150 15% 10%;
-    --popover-foreground: 150 20% 92%;
+    --popover: 150 20% 8%;
+    --popover-foreground: 150 15% 90%;
 
-    --primary: 340 70% 55%;
+    --primary: 330 75% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 150 50% 40%;
+    --secondary: 145 55% 38%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 150 10% 15%;
-    --muted-foreground: 150 10% 55%;
+    --muted: 150 12% 13%;
+    --muted-foreground: 150 10% 50%;
 
-    --accent: 150 50% 40%;
+    --accent: 145 55% 38%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 15% 18%;
-    --input: 150 15% 18%;
-    --ring: 340 70% 55%;
+    --border: 150 18% 15%;
+    --input: 150 18% 15%;
+    --ring: 330 75% 55%;
 
     --radius: 0.75rem;
 
     /* Game-specific tokens */
-    --game-pink: 340 70% 55%;
-    --game-pink-glow: 340 80% 65%;
-    --game-green: 150 50% 40%;
-    --game-green-glow: 150 60% 50%;
-    --game-dark: 150 20% 6%;
-    --game-surface: 150 15% 10%;
-    --game-surface-light: 150 12% 14%;
+    --game-pink: 330 75% 55%;
+    --game-pink-glow: 330 85% 65%;
+    --game-green: 145 55% 38%;
+    --game-green-glow: 145 65% 48%;
+    --game-dark: 150 25% 5%;
+    --game-surface: 150 20% 8%;
+    --game-surface-light: 150 15% 12%;
 
     /* Clue colors */
     --clue-red: 0 75% 50%;
@@ -51,12 +51,12 @@
     --clue-yellow: 45 90% 55%;
     --clue-green: 140 60% 42%;
 
-    --font-display: 'Permanent Marker', cursive;
+    --font-display: 'Creepster', cursive;
     --font-narrative: 'Architects Daughter', cursive;
     --font-body: 'Inter', sans-serif;
 
-    --shadow-glow-pink: 0 0 30px hsl(340 70% 55% / 0.3);
-    --shadow-glow-green: 0 0 30px hsl(150 50% 40% / 0.3);
+    --shadow-glow-pink: 0 0 30px hsl(330 75% 55% / 0.3);
+    --shadow-glow-green: 0 0 30px hsl(145 55% 38% / 0.3);
   }
 }
 
@@ -85,9 +85,9 @@
     box-shadow: var(--shadow-glow-green);
   }
   .text-glow-pink {
-    text-shadow: 0 0 20px hsl(340 70% 55% / 0.5);
+    text-shadow: 0 0 20px hsl(330 75% 55% / 0.5), 0 0 40px hsl(330 75% 55% / 0.2);
   }
   .text-glow-green {
-    text-shadow: 0 0 20px hsl(150 50% 40% / 0.5);
+    text-shadow: 0 0 20px hsl(145 55% 38% / 0.5), 0 0 40px hsl(145 55% 38% / 0.2);
   }
 }

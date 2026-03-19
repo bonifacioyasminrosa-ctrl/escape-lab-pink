@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FlaskConical } from "lucide-react";
+import { AvatarType } from "./gameData";
+import avatarBoy from "@/assets/avatar-boy.png";
+import avatarGirl from "@/assets/avatar-girl.png";
 
 interface NameInputScreenProps {
+  avatar: AvatarType;
   onSubmit: (name: string) => void;
 }
 
-export default function NameInputScreen({ onSubmit }: NameInputScreenProps) {
+export default function NameInputScreen({ avatar, onSubmit }: NameInputScreenProps) {
   const [name, setName] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -18,27 +21,53 @@ export default function NameInputScreen({ onSubmit }: NameInputScreenProps) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      exit={{ opacity: 0, x: -50 }}
+      transition={{ duration: 0.5 }}
       className="flex min-h-screen flex-col items-center justify-center bg-background p-6"
     >
+      {/* Floating particles */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute h-1.5 w-1.5 rounded-full"
+            style={{
+              background: i % 2 === 0 ? "hsl(var(--game-pink) / 0.3)" : "hsl(var(--game-green) / 0.3)",
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{ y: [0, -20, 0], opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 3 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }}
+          />
+        ))}
+      </div>
+
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.2, type: "spring" }}
-        className="w-full max-w-md space-y-8 text-center"
+        className="relative z-10 w-full max-w-md space-y-8 text-center"
       >
-        <div className="flex justify-center">
-          <div className="rounded-full bg-game-surface p-6 glow-pink">
-            <FlaskConical className="h-16 w-16 text-primary" />
+        <motion.div
+          className="flex justify-center"
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 3, repeat: Infinity }}
+        >
+          <div className="rounded-full bg-game-surface p-4 glow-pink">
+            <img
+              src={avatar === "boy" ? avatarBoy : avatarGirl}
+              alt="Seu avatar"
+              className="h-24 w-24 object-contain"
+            />
           </div>
-        </div>
+        </motion.div>
 
         <div>
-          <h1 className="font-display text-4xl text-primary text-glow-pink">
-            O Enigma do Laboratório
+          <h1 className="font-display text-3xl text-primary text-glow-pink">
+            Qual é o seu nome?
           </h1>
-          <p className="mt-3 font-narrative text-lg text-muted-foreground">
-            Bem-vindo, jovem cientista! Antes de entrar no laboratório, preciso saber seu nome...
+          <p className="mt-3 font-narrative text-base text-muted-foreground">
+            Digite seu nome para entrar no laboratório misterioso...
           </p>
         </div>
 
