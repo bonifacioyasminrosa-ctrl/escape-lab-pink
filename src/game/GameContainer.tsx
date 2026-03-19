@@ -1,4 +1,5 @@
 import { useGameState } from "./useGameState";
+import AvatarSelectScreen from "./AvatarSelectScreen";
 import NameInputScreen from "./NameInputScreen";
 import IntroScreen from "./IntroScreen";
 import ExploreScreen from "./ExploreScreen";
@@ -9,16 +10,27 @@ import { AnimatePresence } from "framer-motion";
 
 export default function GameContainer() {
   const {
-    state, setPlayerName, goToPhase,
+    state, setAvatar, setPlayerName, goToPhase,
     findClue, answerClue, fillCabinetSlot,
     toggleHint, resetGame,
   } = useGameState();
 
   return (
     <AnimatePresence mode="wait">
+      {state.phase === "avatar" && (
+        <AvatarSelectScreen
+          key="avatar"
+          onSelect={(avatar) => {
+            setAvatar(avatar);
+            goToPhase("name");
+          }}
+        />
+      )}
+
       {state.phase === "name" && (
         <NameInputScreen
           key="name"
+          avatar={state.avatar}
           onSubmit={(name) => {
             setPlayerName(name);
             goToPhase("intro");
@@ -30,6 +42,7 @@ export default function GameContainer() {
         <IntroScreen
           key="intro"
           playerName={state.playerName}
+          avatar={state.avatar}
           onContinue={() => goToPhase("explore")}
         />
       )}
@@ -56,7 +69,10 @@ export default function GameContainer() {
           errors={state.errors}
           maxErrors={state.maxErrors}
           timeLeft={state.timeLeft}
+          playerName={state.playerName}
+          avatar={state.avatar}
           onFillSlot={fillCabinetSlot}
+          onVictory={() => goToPhase("victory")}
         />
       )}
 

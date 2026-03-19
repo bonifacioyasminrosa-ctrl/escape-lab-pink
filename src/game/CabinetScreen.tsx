@@ -1,28 +1,34 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { CabinetSlot, COLOR_LABELS, GLASSWARE_OPTIONS, COMPOUND_OPTIONS } from "./gameData";
-import { Lock, Unlock, AlertTriangle, Check } from "lucide-react";
+import { CabinetSlot, COLOR_LABELS, COLOR_EMOJI, GLASSWARE_OPTIONS, COMPOUND_OPTIONS } from "./gameData";
+import { Lock, Unlock, AlertTriangle, Check, Key, DoorOpen } from "lucide-react";
+import type { AvatarType } from "./gameData";
+import avatarBoy from "@/assets/avatar-boy.png";
+import avatarGirl from "@/assets/avatar-girl.png";
+import teacherImg from "@/assets/teacher.png";
 
 interface CabinetScreenProps {
   slots: CabinetSlot[];
   errors: number;
   maxErrors: number;
   timeLeft: number;
+  playerName: string;
+  avatar: AvatarType;
   onFillSlot: (color: string, glassware: string, compound: string) => boolean;
+  onVictory: () => void;
 }
 
 const SLOT_BORDER: Record<string, string> = {
-  red: "border-clue-red",
-  blue: "border-clue-blue",
-  yellow: "border-clue-yellow",
-  green: "border-clue-green",
+  red: "border-clue-red", blue: "border-clue-blue", yellow: "border-clue-yellow", green: "border-clue-green",
 };
-
 const SLOT_BG: Record<string, string> = {
-  red: "bg-clue-red/10",
-  blue: "bg-clue-blue/10",
-  yellow: "bg-clue-yellow/10",
-  green: "bg-clue-green/10",
+  red: "bg-clue-red/10", blue: "bg-clue-blue/10", yellow: "bg-clue-yellow/10", green: "bg-clue-green/10",
+};
+const SLOT_GLOW: Record<string, string> = {
+  red: "shadow-[0_0_20px_hsl(0,75%,50%,0.4)]",
+  blue: "shadow-[0_0_20px_hsl(210,75%,50%,0.4)]",
+  yellow: "shadow-[0_0_20px_hsl(45,90%,55%,0.4)]",
+  green: "shadow-[0_0_20px_hsl(140,60%,42%,0.4)]",
 };
 
 function formatTime(seconds: number) {
@@ -31,11 +37,21 @@ function formatTime(seconds: number) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, onFillSlot }: CabinetScreenProps) {
+type CabinetPhase = "shelves" | "compartments" | "drawer" | "key" | "door" | "teacher";
+
+export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, playerName, avatar, onFillSlot, onVictory }: CabinetScreenProps) {
+  const [cabinetPhase, setCabinetPhase] = useState<CabinetPhase>("shelves");
   const [activeSlot, setActiveSlot] = useState<string | null>(null);
   const [selectedGlassware, setSelectedGlassware] = useState("");
   const [selectedCompound, setSelectedCompound] = useState("");
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
+  
+  // For compartment fitting phase
+  const [fittedSlots, setFittedSlots] = useState<Set<string>>(new Set());
+  const [draggingSlot, setDraggingSlot] = useState<string | null>(null);
+
+  const allSlotsFilled = slots.every(s => s.correct);
+  const allFitted = fittedSlots.size === 4;
 
   const handleSubmit = () => {
     if (!activeSlot || !selectedGlassware || !selectedCompound) return;
@@ -53,8 +69,27 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, onFi
     }
   };
 
+  // Check if all slots are filled and transition
+  const shouldTransition = allSlotsFilled && cabinetPhase === "shelves";
+  if (shouldTransition) {
+    setTimeout(() => setCabinetPhase("compartments"), 1500);
+  }
+
+  const handleFitCompartment = (color: string) => {
+    setFittedSlots(prev => {
+      const next = new Set(prev);
+      next.add(color);
+      return next;
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-background"
+    >
       {/* Header */}
       <div className="sticky top-0 z-20 border-b border-border bg-game-surface/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
@@ -69,46 +104,455 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, onFi
         </div>
       </div>
 
-      <div className="mx-auto max-w-4xl p-6 space-y-6">
-        <div className="text-center">
-          <h2 className="font-display text-3xl text-secondary text-glow-green">
-            🗄️ Armário dos Compartimentos
-          </h2>
-          <p className="font-narrative text-muted-foreground mt-2">
-            Encaixe a vidraria correta com a substância correta em cada compartimento.
-          </p>
-        </div>
+      <AnimatePresence mode="wait">
+        {/* PHASE 1: Shelves - Pick glassware + compound */}
+        {cabinetPhase === "shelves" && (
+          <motion.div
+            key="shelves"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mx-auto max-w-4xl p-6 space-y-6"
+          >
+            <div className="text-center">
+              <h2 className="font-display text-3xl text-secondary text-glow-green">
+                🧪 Prateleira de Vidrarias e Substâncias
+              </h2>
+              <p className="font-narrative text-muted-foreground mt-2">
+                Selecione a vidraria e a substância correta para cada cor. Lembre das cores das pistas!
+              </p>
+            </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {slots.map(slot => (
-            <motion.button
-              key={slot.color}
-              whileHover={slot.correct ? {} : { scale: 1.03 }}
-              whileTap={slot.correct ? {} : { scale: 0.97 }}
-              onClick={() => !slot.correct && setActiveSlot(slot.color)}
-              disabled={slot.correct}
-              className={`rounded-xl border-2 p-6 text-center transition-all ${SLOT_BORDER[slot.color]} ${
-                slot.correct ? `${SLOT_BG[slot.color]} opacity-70` : "bg-game-surface hover:bg-game-surface-light"
-              }`}
-            >
-              <div className="flex justify-center mb-3">
-                {slot.correct ? (
-                  <Unlock className="h-10 w-10 text-secondary" />
-                ) : (
-                  <Lock className="h-10 w-10 text-muted-foreground" />
-                )}
+            {/* Glassware shelf visual */}
+            <div className="rounded-xl border border-border bg-game-surface p-4">
+              <h3 className="font-display text-sm text-primary mb-3">📐 Prateleira de Vidrarias</h3>
+              <div className="flex flex-wrap gap-2">
+                {GLASSWARE_OPTIONS.map(g => (
+                  <motion.div
+                    key={g}
+                    whileHover={{ y: -3 }}
+                    className="rounded-lg border border-border bg-game-surface-light px-3 py-2 text-xs font-narrative text-foreground cursor-default"
+                  >
+                    🧪 {g}
+                  </motion.div>
+                ))}
               </div>
-              <p className="font-display text-lg">{COLOR_LABELS[slot.color]}</p>
-              {slot.correct && (
-                <div className="mt-2 space-y-1 text-sm font-narrative text-muted-foreground">
-                  <p>{slot.glassware}</p>
-                  <p>{slot.compound}</p>
-                </div>
-              )}
-            </motion.button>
-          ))}
-        </div>
-      </div>
+            </div>
+
+            {/* Compound shelf visual */}
+            <div className="rounded-xl border border-border bg-game-surface p-4">
+              <h3 className="font-display text-sm text-secondary mb-3">⚗️ Prateleira de Substâncias</h3>
+              <div className="flex flex-wrap gap-2">
+                {COMPOUND_OPTIONS.map(c => (
+                  <motion.div
+                    key={c}
+                    whileHover={{ y: -3 }}
+                    className="rounded-lg border border-border bg-game-surface-light px-3 py-2 text-xs font-narrative text-foreground cursor-default"
+                  >
+                    ⚗️ {c}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Color compartments */}
+            <div className="grid grid-cols-2 gap-4">
+              {slots.map(slot => (
+                <motion.button
+                  key={slot.color}
+                  whileHover={slot.correct ? {} : { scale: 1.03 }}
+                  whileTap={slot.correct ? {} : { scale: 0.97 }}
+                  onClick={() => !slot.correct && setActiveSlot(slot.color)}
+                  disabled={slot.correct}
+                  className={`rounded-xl border-2 p-5 text-center transition-all ${SLOT_BORDER[slot.color]} ${
+                    slot.correct ? `${SLOT_BG[slot.color]} ${SLOT_GLOW[slot.color]}` : "bg-game-surface hover:bg-game-surface-light"
+                  }`}
+                >
+                  <div className="flex justify-center mb-2">
+                    {slot.correct ? (
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1, rotate: 360 }} transition={{ type: "spring" }}>
+                        <Unlock className="h-8 w-8 text-secondary" />
+                      </motion.div>
+                    ) : (
+                      <Lock className="h-8 w-8 text-muted-foreground" />
+                    )}
+                  </div>
+                  <p className="font-display text-base">{COLOR_EMOJI[slot.color]} {COLOR_LABELS[slot.color]}</p>
+                  {slot.correct && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 space-y-0.5 text-xs font-narrative text-muted-foreground"
+                    >
+                      <p>🧪 {slot.glassware}</p>
+                      <p>⚗️ {slot.compound}</p>
+                    </motion.div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* PHASE 2: Compartments - fit glassware into shaped slots */}
+        {cabinetPhase === "compartments" && (
+          <motion.div
+            key="compartments"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ type: "spring", damping: 15 }}
+            className="mx-auto max-w-4xl p-6 space-y-6"
+          >
+            <div className="text-center">
+              <motion.h2
+                className="font-display text-3xl text-primary text-glow-pink"
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+              >
+                🗄️ Armário Secreto Revelado!
+              </motion.h2>
+              <p className="font-narrative text-muted-foreground mt-2">
+                Um armário secreto apareceu! Encaixe cada vidraria no compartimento correto.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {slots.map(slot => {
+                const isFitted = fittedSlots.has(slot.color);
+                return (
+                  <motion.button
+                    key={slot.color}
+                    onClick={() => !isFitted && handleFitCompartment(slot.color)}
+                    disabled={isFitted}
+                    whileHover={isFitted ? {} : { scale: 1.05 }}
+                    whileTap={isFitted ? {} : { scale: 0.95 }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 * slots.indexOf(slot) }}
+                    className={`rounded-xl border-2 border-dashed p-6 text-center transition-all ${
+                      isFitted
+                        ? `${SLOT_BORDER[slot.color]} ${SLOT_BG[slot.color]} ${SLOT_GLOW[slot.color]} border-solid`
+                        : "border-muted-foreground/30 bg-game-surface hover:border-primary"
+                    }`}
+                  >
+                    {isFitted ? (
+                      <motion.div
+                        initial={{ scale: 0, rotate: -90 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", damping: 8 }}
+                        className="space-y-2"
+                      >
+                        <div className="text-3xl">🧪</div>
+                        <p className="font-display text-sm text-secondary">{slot.glassware}</p>
+                        <p className="text-xs font-narrative text-muted-foreground">{slot.compound}</p>
+                        <Check className="h-5 w-5 text-secondary mx-auto" />
+                      </motion.div>
+                    ) : (
+                      <div className="space-y-2">
+                        <motion.div
+                          className="text-3xl opacity-30"
+                          animate={{ scale: [1, 1.1, 1] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          📦
+                        </motion.div>
+                        <p className="font-display text-sm text-muted-foreground">
+                          {COLOR_EMOJI[slot.color]} Compartimento
+                        </p>
+                        <p className="text-xs font-narrative text-muted-foreground/50">
+                          Clique para encaixar
+                        </p>
+                      </div>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {allFitted && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-center"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setCabinetPhase("drawer")}
+                  className="rounded-lg bg-secondary px-6 py-3 font-display text-lg text-secondary-foreground glow-green"
+                  animate={{ boxShadow: ["0 0 20px hsl(150 50% 40% / 0.3)", "0 0 40px hsl(150 50% 40% / 0.7)", "0 0 20px hsl(150 50% 40% / 0.3)"] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  Todos encaixados! Continuar...
+                </motion.button>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
+        {/* PHASE 3: Drawer opening */}
+        {cabinetPhase === "drawer" && (
+          <motion.div
+            key="drawer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex min-h-[80vh] flex-col items-center justify-center p-6"
+          >
+            <motion.div
+              className="text-center space-y-6 max-w-md"
+              initial={{ y: 50 }}
+              animate={{ y: 0 }}
+              transition={{ type: "spring" }}
+            >
+              <motion.div
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ delay: 0.5, duration: 1, type: "spring" }}
+                className="mx-auto w-48 h-24 rounded-lg border-2 border-secondary bg-game-surface origin-top flex items-center justify-center"
+                style={{ boxShadow: "0 0 30px hsl(150 50% 40% / 0.4)" }}
+              >
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.5 }}
+                >
+                  <Key className="h-12 w-12 text-primary" />
+                </motion.div>
+              </motion.div>
+              
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="font-narrative text-lg text-foreground"
+              >
+                <em>CLICK!</em> Uma gaveta secreta se abre lentamente...
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2 }}
+                className="font-narrative text-muted-foreground"
+              >
+                Dentro dela, brilhando sob a luz esverdeada, está uma chave antiga!
+              </motion.p>
+
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2.5 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCabinetPhase("key")}
+                className="rounded-lg bg-primary px-6 py-3 font-display text-lg text-primary-foreground glow-pink"
+              >
+                🔑 Pegar a Chave
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* PHASE 4: Key picked up */}
+        {cabinetPhase === "key" && (
+          <motion.div
+            key="key"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex min-h-[80vh] flex-col items-center justify-center p-6"
+          >
+            <motion.div className="text-center space-y-6 max-w-md">
+              <motion.div
+                initial={{ y: 0 }}
+                animate={{ y: [-10, 0, -10] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Key className="h-20 w-20 text-primary mx-auto" />
+              </motion.div>
+
+              <p className="font-narrative text-lg text-foreground">
+                {playerName} segura a chave com determinação. A porta está logo ali!
+              </p>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCabinetPhase("door")}
+                className="rounded-lg bg-secondary px-6 py-3 font-display text-lg text-secondary-foreground glow-green"
+              >
+                🚪 Ir até a porta
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* PHASE 5: Walking to door animation */}
+        {cabinetPhase === "door" && (
+          <motion.div
+            key="door"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex min-h-[80vh] flex-col items-center justify-center p-6 relative overflow-hidden"
+          >
+            {/* Door */}
+            <div className="relative w-full max-w-sm mx-auto">
+              <motion.div
+                className="mx-auto w-40 h-64 rounded-t-xl border-2 border-secondary bg-game-surface flex items-center justify-center relative overflow-hidden"
+                style={{ boxShadow: "0 0 40px hsl(150 50% 40% / 0.3)" }}
+              >
+                {/* Door opening */}
+                <motion.div
+                  className="absolute inset-0 bg-secondary/20"
+                  initial={{ scaleX: 1 }}
+                  animate={{ scaleX: 0 }}
+                  transition={{ delay: 2.5, duration: 1.5, ease: "easeInOut" }}
+                  style={{ transformOrigin: "left" }}
+                />
+                <motion.div
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 0 }}
+                  transition={{ delay: 2.5, duration: 0.5 }}
+                >
+                  <DoorOpen className="h-16 w-16 text-muted-foreground" />
+                </motion.div>
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 3.5 }}
+                >
+                  <span className="text-4xl">✨</span>
+                </motion.div>
+              </motion.div>
+
+              {/* Avatar walking */}
+              <motion.div
+                className="absolute bottom-0 left-1/2"
+                initial={{ x: "-50%", y: 80, scale: 0.6 }}
+                animate={{ x: "-50%", y: -20, scale: 0.9 }}
+                transition={{ delay: 0.5, duration: 2, ease: "easeInOut" }}
+              >
+                <motion.img
+                  src={avatar === "boy" ? avatarBoy : avatarGirl}
+                  alt={playerName}
+                  className="h-28 w-28 object-contain"
+                  animate={{ x: [0, -3, 3, -3, 0] }}
+                  transition={{ duration: 0.5, repeat: 4, delay: 0.5 }}
+                />
+              </motion.div>
+            </div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="mt-8 font-narrative text-lg text-foreground text-center"
+            >
+              {playerName} caminha até a porta e insere a chave...
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 4 }}
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCabinetPhase("teacher")}
+                className="mt-4 rounded-lg bg-primary px-6 py-3 font-display text-lg text-primary-foreground glow-pink"
+              >
+                A porta se abriu! 🎉
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* PHASE 6: Teacher congratulation */}
+        {cabinetPhase === "teacher" && (
+          <motion.div
+            key="teacher"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex min-h-[80vh] flex-col items-center justify-center p-6"
+          >
+            <motion.div className="text-center space-y-6 max-w-md">
+              <motion.div
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, type: "spring", damping: 10 }}
+              >
+                <img src={teacherImg} alt="Professora" className="h-44 w-44 object-contain mx-auto" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="space-y-4"
+              >
+                <h2 className="font-display text-3xl text-secondary text-glow-green">
+                  Parabéns, {playerName}! 🎉
+                </h2>
+                <p className="font-narrative text-lg text-foreground">
+                  A professora está esperando do lado de fora com um grande sorriso!
+                </p>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2 }}
+                  className="rounded-xl border border-secondary/30 bg-secondary/5 p-4"
+                >
+                  <p className="font-narrative text-foreground italic">
+                    "{playerName}, estou impressionada! Você resolveu todos os enigmas do laboratório e provou que domina as vidrarias e os compostos inorgânicos. Nota máxima para você!"
+                  </p>
+                  <p className="mt-2 font-narrative text-sm text-muted-foreground">— Professora</p>
+                </motion.div>
+              </motion.div>
+
+              {/* Confetti-like particles */}
+              <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                {[...Array(20)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute h-2 w-2 rounded-full"
+                    style={{
+                      background: ["hsl(var(--game-pink))", "hsl(var(--game-green))", "hsl(var(--clue-yellow))", "hsl(var(--clue-blue))"][i % 4],
+                      left: `${Math.random() * 100}%`,
+                      top: "-5%",
+                    }}
+                    animate={{
+                      y: ["0vh", "100vh"],
+                      x: [0, (Math.random() - 0.5) * 100],
+                      rotate: [0, 360 * (Math.random() > 0.5 ? 1 : -1)],
+                    }}
+                    transition={{
+                      duration: 3 + Math.random() * 2,
+                      repeat: Infinity,
+                      delay: Math.random() * 2,
+                    }}
+                  />
+                ))}
+              </div>
+
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onVictory}
+                className="rounded-lg bg-primary px-8 py-3 font-display text-lg text-primary-foreground glow-pink"
+              >
+                🏆 Concluir Aventura
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Slot fill modal */}
       <AnimatePresence>
@@ -120,69 +564,88 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, onFi
             className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
           >
             <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.8 }}
+              initial={{ scale: 0.7, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.7, y: 30 }}
+              transition={{ type: "spring", damping: 15 }}
               className={`w-full max-w-md rounded-xl border-2 bg-game-surface p-6 ${SLOT_BORDER[activeSlot]}`}
             >
-              <h3 className="font-display text-xl mb-4">{COLOR_LABELS[activeSlot]}</h3>
+              <h3 className="font-display text-xl mb-1">{COLOR_EMOJI[activeSlot]} {COLOR_LABELS[activeSlot]}</h3>
+              <p className="text-xs font-narrative text-muted-foreground mb-4">Selecione a vidraria e o composto da prateleira</p>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">Vidraria:</label>
-                  <select
-                    value={selectedGlassware}
-                    onChange={e => setSelectedGlassware(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">Selecione...</option>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">🧪 Vidraria:</label>
+                  <div className="grid grid-cols-3 gap-2">
                     {GLASSWARE_OPTIONS.map(g => (
-                      <option key={g} value={g}>{g}</option>
+                      <motion.button
+                        key={g}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setSelectedGlassware(g)}
+                        className={`rounded-lg border px-2 py-2 text-xs font-narrative transition-all ${
+                          selectedGlassware === g
+                            ? "border-primary bg-primary/20 text-primary"
+                            : "border-border bg-background text-foreground hover:border-primary/50"
+                        }`}
+                      >
+                        {g}
+                      </motion.button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">Composto:</label>
-                  <select
-                    value={selectedCompound}
-                    onChange={e => setSelectedCompound(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">Selecione...</option>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">⚗️ Composto:</label>
+                  <div className="grid grid-cols-2 gap-2">
                     {COMPOUND_OPTIONS.map(c => (
-                      <option key={c} value={c}>{c}</option>
+                      <motion.button
+                        key={c}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setSelectedCompound(c)}
+                        className={`rounded-lg border px-2 py-2 text-xs font-narrative transition-all ${
+                          selectedCompound === c
+                            ? "border-secondary bg-secondary/20 text-secondary"
+                            : "border-border bg-background text-foreground hover:border-secondary/50"
+                        }`}
+                      >
+                        {c}
+                      </motion.button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 pt-2">
                   <button
-                    onClick={() => { setActiveSlot(null); setFeedback(null); }}
-                    className="flex-1 rounded-lg border border-border py-2 text-muted-foreground hover:text-foreground"
+                    onClick={() => { setActiveSlot(null); setFeedback(null); setSelectedGlassware(""); setSelectedCompound(""); }}
+                    className="flex-1 rounded-lg border border-border py-2 text-muted-foreground hover:text-foreground font-narrative text-sm"
                   >
                     Cancelar
                   </button>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={handleSubmit}
                     disabled={!selectedGlassware || !selectedCompound}
-                    className="flex-1 rounded-lg bg-primary py-2 font-display text-primary-foreground disabled:opacity-40"
+                    className="flex-1 rounded-lg bg-primary py-2 font-display text-sm text-primary-foreground disabled:opacity-40"
                   >
                     Encaixar
-                  </button>
+                  </motion.button>
                 </div>
               </div>
 
               <AnimatePresence>
                 {feedback === "correct" && (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="mt-3 flex items-center gap-2 text-secondary font-narrative">
-                    <Check className="h-5 w-5" /> CLICK! Compartimento ativado!
+                  <motion.p initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                    className="mt-3 flex items-center gap-2 text-secondary font-narrative text-sm">
+                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.5 }}><Check className="h-5 w-5" /></motion.div>
+                    CLICK! Combinação correta! ✨
                   </motion.p>
                 )}
                 {feedback === "wrong" && (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="mt-3 flex items-center gap-2 text-destructive font-narrative">
+                  <motion.p initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: [0, -5, 5, -5, 0] }} exit={{ opacity: 0 }}
+                    className="mt-3 flex items-center gap-2 text-destructive font-narrative text-sm">
                     <AlertTriangle className="h-5 w-5" /> BIP! Combinação incorreta!
                   </motion.p>
                 )}
@@ -191,6 +654,6 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, onFi
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Permanent Marker', 'cursive'],
+        display: ['Creepster', 'cursive'],
         narrative: ['Architects Daughter', 'cursive'],
         body: ['Inter', 'sans-serif'],
       },
@@ -84,19 +84,24 @@ export default {
         },
         "flicker": {
           "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.7" },
-          "75%": { opacity: "0.9" },
+          "50%": { opacity: "0.6" },
+          "75%": { opacity: "0.85" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px hsl(340 70% 55% / 0.3)" },
-          "50%": { boxShadow: "0 0 40px hsl(340 70% 55% / 0.6)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsl(330 75% 55% / 0.3)" },
+          "50%": { boxShadow: "0 0 50px hsl(330 75% 55% / 0.6)" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "flicker": "flicker 3s ease-in-out infinite",
+        "flicker": "flicker 2s ease-in-out infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "float": "float 3s ease-in-out infinite",
       },
     },
   },
