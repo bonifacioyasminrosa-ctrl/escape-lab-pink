@@ -236,12 +236,11 @@ export default function ExploreScreen({
             {allAnswered && (
               <motion.button
                 initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
+                animate={{ opacity: 1, x: 0, boxShadow: ["0 0 20px hsl(150 50% 40% / 0.3)", "0 0 40px hsl(150 50% 40% / 0.7)", "0 0 20px hsl(150 50% 40% / 0.3)"] }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onGoToCabinet}
                 className="flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 font-display text-sm text-secondary-foreground glow-green"
-                animate={{ boxShadow: ["0 0 20px hsl(150 50% 40% / 0.3)", "0 0 40px hsl(150 50% 40% / 0.7)", "0 0 20px hsl(150 50% 40% / 0.3)"] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
                 <FlaskConical className="h-4 w-4" />
