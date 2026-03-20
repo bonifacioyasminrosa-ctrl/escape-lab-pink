@@ -45,49 +45,49 @@ export const CLUES: Clue[] = [
     id: 2, color: "red", type: "composto",
     question: "Sou um ácido forte, muito usado na indústria e na limpeza de metais. Minha fórmula é HCl. Qual é meu nome?",
     answer: "Ácido clorídrico",
-    alternateAnswers: ["acido cloridrico", "ácido cloridrico", "acido clorídrico", "hcl"],
+    alternateAnswers: ["acido cloridrico", "ácido cloridrico", "acido clorídrico", "hcl", "Acido cloridrico"],
     found: false, answered: false,
   },
   {
     id: 3, color: "blue", type: "vidraria",
     question: "Sou um recipiente cilíndrico com fundo chato, usado para aquecer líquidos ou fazer reações. Tenho uma boca larga. Quem sou eu?",
     answer: "Béquer",
-    alternateAnswers: ["bequer", "becker", "béquer", "beaker", "beker"],
+    alternateAnswers: ["bequer", "becker", "béquer", "beaker", "beker", "Becker", "Bequer", "Beaker", "Beker"],
     found: false, answered: false,
   },
   {
     id: 4, color: "blue", type: "composto",
     question: "Sou uma base forte, conhecida como soda cáustica, usada na fabricação de sabão. Minha fórmula é NaOH. Qual é meu nome?",
     answer: "Hidróxido de sódio",
-    alternateAnswers: ["hidroxido de sodio", "hidróxido de sodio", "hidroxido de sódio", "naoh", "soda caustica", "soda cáustica"],
+    alternateAnswers: ["hidroxido de sodio", "hidróxido de sodio", "hidroxido de sódio", "naoh", "soda caustica", "soda cáustica", "Hidroxido de sodio", "NaOH"],
     found: false, answered: false,
   },
   {
     id: 5, color: "yellow", type: "vidraria",
     question: "Sou um tubo alongado, aberto em uma das extremidades, usado para conter pequenas amostras ou fazer reações em pequena escala.",
     answer: "Tubo de ensaio",
-    alternateAnswers: ["tubo de ensaio"],
+    alternateAnswers: ["tubo de ensaio", "Tubo de Ensaio"],
     found: false, answered: false,
   },
   {
     id: 6, color: "yellow", type: "composto",
     question: "Sou o sal de cozinha, essencial para a vida e para temperar alimentos. Minha fórmula é NaCl. Qual é meu nome?",
     answer: "Cloreto de sódio",
-    alternateAnswers: ["cloreto de sodio", "nacl", "sal de cozinha", "sal"],
+    alternateAnswers: ["cloreto de sodio", "nacl", "sal de cozinha", "sal", "NaCl", "Cloreto de Sodio"],
     found: false, answered: false,
   },
   {
     id: 7, color: "green", type: "vidraria",
     question: "Tenho formato arredondado e fundo chato, usado para aquecer líquidos por longos períodos, comum em destilações.",
     answer: "Balão",
-    alternateAnswers: ["balao", "balão de fundo chato", "balao de fundo chato", "balão volumétrico", "balao volumetrico"],
+    alternateAnswers: ["balao", "balão de fundo chato", "balao de fundo chato", "balão volumétrico", "balao volumetrico", "Balao"],
     found: false, answered: false,
   },
   {
     id: 8, color: "green", type: "composto",
     question: "Sou um gás incolor essencial para a fotossíntese, produzido na respiração e na combustão. Minha fórmula é CO₂. Qual é meu nome?",
     answer: "Dióxido de carbono",
-    alternateAnswers: ["dioxido de carbono", "co2", "gas carbonico", "gás carbônico"],
+    alternateAnswers: ["dioxido de carbono", "co2", "gas carbonico", "gás carbônico", "CO2", "Dioxido de carbono", "Dioxido de Carbono"],
     found: false, answered: false,
   },
 ];
@@ -113,8 +113,35 @@ export const COLOR_EMOJI: Record<string, string> = {
   green: "🟢",
 };
 
-export const GLASSWARE_OPTIONS = ["Erlenmeyer", "Tubo de ensaio", "Béquer", "Balão", "Proveta", "Funil", "Pisseta", "Vidro de relógio", "Pipeta"];
-export const COMPOUND_OPTIONS = ["Ácido clorídrico", "Hidróxido de sódio", "Cloreto de sódio", "Dióxido de carbono"];
+// Glassware options with image keys
+export interface GlasswareOption {
+  name: string;
+  imageKey: string;
+}
+
+export const GLASSWARE_OPTIONS: GlasswareOption[] = [
+  { name: "Erlenmeyer", imageKey: "erlenmeyer" },
+  { name: "Tubo de ensaio", imageKey: "tubo-ensaio" },
+  { name: "Béquer", imageKey: "bequer" },
+  { name: "Balão", imageKey: "balao" },
+  { name: "Proveta", imageKey: "proveta" },
+  { name: "Funil", imageKey: "funil" },
+  { name: "Pisseta", imageKey: "pisseta" },
+  { name: "Vidro de relógio", imageKey: "vidro-relogio" },
+  { name: "Pipeta", imageKey: "pipeta" },
+];
+
+export interface CompoundOption {
+  name: string;
+  imageKey: string;
+}
+
+export const COMPOUND_OPTIONS: CompoundOption[] = [
+  { name: "Ácido clorídrico", imageKey: "acido-cloridrico" },
+  { name: "Hidróxido de sódio", imageKey: "hidroxido-sodio" },
+  { name: "Cloreto de sódio", imageKey: "cloreto-sodio" },
+  { name: "Dióxido de carbono", imageKey: "dioxido-carbono" },
+];
 
 export interface LabHotspot {
   id: number;

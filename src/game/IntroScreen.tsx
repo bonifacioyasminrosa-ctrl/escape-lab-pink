@@ -14,7 +14,7 @@ export default function IntroScreen({ playerName, avatar, onContinue }: IntroScr
   const pronounCap = avatar === "girl" ? "A" : "O";
 
   const paragraphs = [
-    `Era para ser apenas mais uma aula de química. A professora havia saído por alguns minutos, e ${playerName} decidiu revisar os experimentos. Mas, de repente, as luzes começaram a piscar e a porta se trancou com um estalo metálico.`,
+    `Era para ser apenas mais uma aula de química. A professora havia saído por alguns minutos, e ${playerName} decidiu revisar os experimentos. Mas, de repente, as luzes começaram a piscar e a porta se trancou com um estalo metálico. Bem-vind${pronoun} ao ChemScape.`,
     `No quadro de giz do laboratório, havia uma mensagem: "Car${pronoun} ${playerName}, coloque seus conhecimentos em prática e resolva os enigmas para liberar a saída."`,
     `${pronounCap} determinad${pronoun} ${playerName} percebe que a única forma de escapar é usando seus conhecimentos de química inorgânica e vidrarias.`,
     `Espalhados pelo laboratório existem 8 pistas secretas – pequenos papéis coloridos escondidos nos móveis. Cada pista contém uma pergunta sobre vidrarias ou compostos inorgânicos (ácidos, bases, sais e óxidos).`,

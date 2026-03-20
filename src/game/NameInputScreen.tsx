@@ -64,7 +64,7 @@ export default function NameInputScreen({ avatar, onSubmit }: NameInputScreenPro
 
         <div>
           <h1 className="font-display text-3xl text-primary text-glow-pink">
-            Qual é o seu nome?
+            ChemScape
           </h1>
           <p className="mt-3 font-narrative text-base text-muted-foreground">
             Digite seu nome para entrar no laboratório misterioso...

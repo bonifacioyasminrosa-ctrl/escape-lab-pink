@@ -95,23 +95,25 @@ export function useGameState() {
     return correct;
   }, [state.clues, stopTimer]);
 
+  // Cabinet uses exact string comparison since user picks from buttons
   const fillCabinetSlot = useCallback((color: string, glassware: string, compound: string): boolean => {
     let isCorrect = false;
     setState(prev => {
+      const slot = prev.cabinetSlots.find(s => s.color === color);
+      if (!slot) return prev;
+
+      // Direct comparison - user selects from predefined buttons
+      const correct = glassware === slot.correctGlassware && compound === slot.correctCompound;
+      isCorrect = correct;
+
       const newSlots = prev.cabinetSlots.map(s => {
-        if (s.color === color) {
-          const correct = normalize(glassware) === normalize(s.correctGlassware) && 
-                          normalize(compound) === normalize(s.correctCompound);
-          isCorrect = correct;
-          if (correct) {
-            return { ...s, glassware, compound, filled: true, correct: true };
-          }
-          return s;
+        if (s.color === color && correct) {
+          return { ...s, glassware, compound, filled: true, correct: true };
         }
         return s;
       });
 
-      if (!isCorrect) {
+      if (!correct) {
         const newErrors = prev.errors + 1;
         if (newErrors >= prev.maxErrors) {
           stopTimer();
