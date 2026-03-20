@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CabinetSlot, COLOR_LABELS, COLOR_EMOJI, GLASSWARE_OPTIONS, COMPOUND_OPTIONS } from "./gameData";
+import { GLASSWARE_IMAGES, COMPOUND_IMAGES } from "./assetMaps";
 import { Lock, Unlock, AlertTriangle, Check, Key, DoorOpen } from "lucide-react";
 import type { AvatarType } from "./gameData";
 import avatarBoy from "@/assets/avatar-boy.png";
@@ -45,10 +46,11 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
   const [selectedGlassware, setSelectedGlassware] = useState("");
   const [selectedCompound, setSelectedCompound] = useState("");
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
+  const [pouringAnimation, setPouringAnimation] = useState(false);
   
   // For compartment fitting phase
   const [fittedSlots, setFittedSlots] = useState<Set<string>>(new Set());
-  const [draggingSlot, setDraggingSlot] = useState<string | null>(null);
+  const transitioned = useRef(false);
 
   const allSlotsFilled = slots.every(s => s.correct);
   const allFitted = fittedSlots.size === 4;
@@ -56,24 +58,32 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
   const handleSubmit = () => {
     if (!activeSlot || !selectedGlassware || !selectedCompound) return;
     const correct = onFillSlot(activeSlot, selectedGlassware, selectedCompound);
-    setFeedback(correct ? "correct" : "wrong");
     if (correct) {
+      // Show pouring animation first
+      setPouringAnimation(true);
       setTimeout(() => {
-        setActiveSlot(null);
-        setSelectedGlassware("");
-        setSelectedCompound("");
-        setFeedback(null);
-      }, 1000);
+        setPouringAnimation(false);
+        setFeedback("correct");
+        setTimeout(() => {
+          setActiveSlot(null);
+          setSelectedGlassware("");
+          setSelectedCompound("");
+          setFeedback(null);
+        }, 1000);
+      }, 1500);
     } else {
+      setFeedback("wrong");
       setTimeout(() => setFeedback(null), 1500);
     }
   };
 
-  // Check if all slots are filled and transition
-  const shouldTransition = allSlotsFilled && cabinetPhase === "shelves";
-  if (shouldTransition) {
-    setTimeout(() => setCabinetPhase("compartments"), 1500);
-  }
+  // Transition to compartments once all filled
+  useEffect(() => {
+    if (allSlotsFilled && cabinetPhase === "shelves" && !transitioned.current) {
+      transitioned.current = true;
+      setTimeout(() => setCabinetPhase("compartments"), 1500);
+    }
+  }, [allSlotsFilled, cabinetPhase]);
 
   const handleFitCompartment = (color: string) => {
     setFittedSlots(prev => {
@@ -81,6 +91,17 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
       next.add(color);
       return next;
     });
+  };
+
+  // Get compound image for a given glassware name
+  const getGlasswareImage = (name: string) => {
+    const opt = GLASSWARE_OPTIONS.find(g => g.name === name);
+    return opt ? GLASSWARE_IMAGES[opt.imageKey] : undefined;
+  };
+
+  const getCompoundImage = (name: string) => {
+    const opt = COMPOUND_OPTIONS.find(c => c.name === name);
+    return opt ? COMPOUND_IMAGES[opt.imageKey] : undefined;
   };
 
   return (
@@ -123,33 +144,35 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
               </p>
             </div>
 
-            {/* Glassware shelf visual */}
+            {/* Glassware shelf with images */}
             <div className="rounded-xl border border-border bg-game-surface p-4">
               <h3 className="font-display text-sm text-primary mb-3">📐 Prateleira de Vidrarias</h3>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3 justify-center">
                 {GLASSWARE_OPTIONS.map(g => (
                   <motion.div
-                    key={g}
-                    whileHover={{ y: -3 }}
-                    className="rounded-lg border border-border bg-game-surface-light px-3 py-2 text-xs font-narrative text-foreground cursor-default"
+                    key={g.name}
+                    whileHover={{ y: -5, scale: 1.05 }}
+                    className="flex flex-col items-center gap-1 rounded-lg border border-border bg-game-surface-light p-2 cursor-default w-16"
                   >
-                    🧪 {g}
+                    <img src={GLASSWARE_IMAGES[g.imageKey]} alt={g.name} className="h-12 w-12 object-contain" />
+                    <span className="text-[8px] font-narrative text-muted-foreground text-center leading-tight">{g.name}</span>
                   </motion.div>
                 ))}
               </div>
             </div>
 
-            {/* Compound shelf visual */}
+            {/* Compound shelf with images */}
             <div className="rounded-xl border border-border bg-game-surface p-4">
               <h3 className="font-display text-sm text-secondary mb-3">⚗️ Prateleira de Substâncias</h3>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3 justify-center">
                 {COMPOUND_OPTIONS.map(c => (
                   <motion.div
-                    key={c}
-                    whileHover={{ y: -3 }}
-                    className="rounded-lg border border-border bg-game-surface-light px-3 py-2 text-xs font-narrative text-foreground cursor-default"
+                    key={c.name}
+                    whileHover={{ y: -5, scale: 1.05 }}
+                    className="flex flex-col items-center gap-1 rounded-lg border border-border bg-game-surface-light p-2 cursor-default w-20"
                   >
-                    ⚗️ {c}
+                    <img src={COMPOUND_IMAGES[c.imageKey]} alt={c.name} className="h-14 w-14 object-contain" />
+                    <span className="text-[8px] font-narrative text-muted-foreground text-center leading-tight">{c.name}</span>
                   </motion.div>
                 ))}
               </div>
@@ -182,10 +205,11 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mt-2 space-y-0.5 text-xs font-narrative text-muted-foreground"
+                      className="mt-2 flex items-center justify-center gap-2"
                     >
-                      <p>🧪 {slot.glassware}</p>
-                      <p>⚗️ {slot.compound}</p>
+                      <img src={getGlasswareImage(slot.glassware)} alt={slot.glassware} className="h-8 w-8 object-contain" />
+                      <span className="text-xs text-muted-foreground">+</span>
+                      <img src={getCompoundImage(slot.compound)} alt={slot.compound} className="h-8 w-8 object-contain" />
                     </motion.div>
                   )}
                 </motion.button>
@@ -218,7 +242,7 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {slots.map(slot => {
+              {slots.map((slot, idx) => {
                 const isFitted = fittedSlots.has(slot.color);
                 return (
                   <motion.button
@@ -229,7 +253,7 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                     whileTap={isFitted ? {} : { scale: 0.95 }}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 * slots.indexOf(slot) }}
+                    transition={{ delay: 0.2 * idx }}
                     className={`rounded-xl border-2 border-dashed p-6 text-center transition-all ${
                       isFitted
                         ? `${SLOT_BORDER[slot.color]} ${SLOT_BG[slot.color]} ${SLOT_GLOW[slot.color]} border-solid`
@@ -241,12 +265,11 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                         initial={{ scale: 0, rotate: -90 }}
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{ type: "spring", damping: 8 }}
-                        className="space-y-2"
+                        className="space-y-2 flex flex-col items-center"
                       >
-                        <div className="text-3xl">🧪</div>
+                        <img src={getGlasswareImage(slot.glassware)} alt={slot.glassware} className="h-12 w-12 object-contain" />
                         <p className="font-display text-sm text-secondary">{slot.glassware}</p>
-                        <p className="text-xs font-narrative text-muted-foreground">{slot.compound}</p>
-                        <Check className="h-5 w-5 text-secondary mx-auto" />
+                        <Check className="h-5 w-5 text-secondary" />
                       </motion.div>
                     ) : (
                       <div className="space-y-2">
@@ -397,13 +420,11 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
             animate={{ opacity: 1 }}
             className="flex min-h-[80vh] flex-col items-center justify-center p-6 relative overflow-hidden"
           >
-            {/* Door */}
             <div className="relative w-full max-w-sm mx-auto">
               <motion.div
                 className="mx-auto w-40 h-64 rounded-t-xl border-2 border-secondary bg-game-surface flex items-center justify-center relative overflow-hidden"
                 style={{ boxShadow: "0 0 40px hsl(150 50% 40% / 0.3)" }}
               >
-                {/* Door opening */}
                 <motion.div
                   className="absolute inset-0 bg-secondary/20"
                   initial={{ scaleX: 1 }}
@@ -573,23 +594,75 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
               <h3 className="font-display text-xl mb-1">{COLOR_EMOJI[activeSlot]} {COLOR_LABELS[activeSlot]}</h3>
               <p className="text-xs font-narrative text-muted-foreground mb-4">Selecione a vidraria e o composto da prateleira</p>
 
-              <div className="space-y-4">
+              {/* Pouring animation overlay */}
+              <AnimatePresence>
+                {pouringAnimation && selectedGlassware && selectedCompound && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-game-surface/95 rounded-xl"
+                  >
+                    {/* Compound pouring into glassware */}
+                    <div className="relative">
+                      <motion.img
+                        src={COMPOUND_IMAGES[COMPOUND_OPTIONS.find(c => c.name === selectedCompound)?.imageKey || ""]}
+                        alt={selectedCompound}
+                        className="h-16 w-16 object-contain"
+                        initial={{ y: -40, rotate: -45 }}
+                        animate={{ y: 0, rotate: -90 }}
+                        transition={{ duration: 0.8 }}
+                      />
+                      {/* Liquid drops */}
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className="absolute w-2 h-2 rounded-full bg-primary/60"
+                          style={{ left: "50%", top: "100%" }}
+                          initial={{ y: 0, opacity: 0 }}
+                          animate={{ y: [0, 30 + i * 10], opacity: [0, 1, 0], x: [(Math.random() - 0.5) * 10] }}
+                          transition={{ delay: 0.5 + i * 0.15, duration: 0.6 }}
+                        />
+                      ))}
+                    </div>
+                    <motion.img
+                      src={GLASSWARE_IMAGES[GLASSWARE_OPTIONS.find(g => g.name === selectedGlassware)?.imageKey || ""]}
+                      alt={selectedGlassware}
+                      className="h-20 w-20 object-contain mt-2"
+                      initial={{ scale: 0.9 }}
+                      animate={{ scale: [0.9, 1.05, 1] }}
+                      transition={{ delay: 1, duration: 0.4 }}
+                    />
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                      className="mt-3 font-narrative text-sm text-secondary"
+                    >
+                      Adicionando substância...
+                    </motion.p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-4 relative">
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground mb-2">🧪 Vidraria:</label>
                   <div className="grid grid-cols-3 gap-2">
                     {GLASSWARE_OPTIONS.map(g => (
                       <motion.button
-                        key={g}
+                        key={g.name}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedGlassware(g)}
-                        className={`rounded-lg border px-2 py-2 text-xs font-narrative transition-all ${
-                          selectedGlassware === g
-                            ? "border-primary bg-primary/20 text-primary"
-                            : "border-border bg-background text-foreground hover:border-primary/50"
+                        onClick={() => setSelectedGlassware(g.name)}
+                        className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all ${
+                          selectedGlassware === g.name
+                            ? "border-primary bg-primary/20 ring-1 ring-primary"
+                            : "border-border bg-background hover:border-primary/50"
                         }`}
                       >
-                        {g}
+                        <img src={GLASSWARE_IMAGES[g.imageKey]} alt={g.name} className="h-10 w-10 object-contain" />
+                        <span className="text-[8px] font-narrative text-foreground leading-tight text-center">{g.name}</span>
                       </motion.button>
                     ))}
                   </div>
@@ -600,17 +673,18 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                   <div className="grid grid-cols-2 gap-2">
                     {COMPOUND_OPTIONS.map(c => (
                       <motion.button
-                        key={c}
+                        key={c.name}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedCompound(c)}
-                        className={`rounded-lg border px-2 py-2 text-xs font-narrative transition-all ${
-                          selectedCompound === c
-                            ? "border-secondary bg-secondary/20 text-secondary"
-                            : "border-border bg-background text-foreground hover:border-secondary/50"
+                        onClick={() => setSelectedCompound(c.name)}
+                        className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all ${
+                          selectedCompound === c.name
+                            ? "border-secondary bg-secondary/20 ring-1 ring-secondary"
+                            : "border-border bg-background hover:border-secondary/50"
                         }`}
                       >
-                        {c}
+                        <img src={COMPOUND_IMAGES[c.imageKey]} alt={c.name} className="h-12 w-12 object-contain" />
+                        <span className="text-[8px] font-narrative text-foreground leading-tight text-center">{c.name}</span>
                       </motion.button>
                     ))}
                   </div>
@@ -627,7 +701,7 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={handleSubmit}
-                    disabled={!selectedGlassware || !selectedCompound}
+                    disabled={!selectedGlassware || !selectedCompound || pouringAnimation}
                     className="flex-1 rounded-lg bg-primary py-2 font-display text-sm text-primary-foreground disabled:opacity-40"
                   >
                     Encaixar

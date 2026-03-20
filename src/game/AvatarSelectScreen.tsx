@@ -52,7 +52,7 @@ export default function AvatarSelectScreen({ onSelect }: AvatarSelectScreenProps
             animate={{ textShadow: ["0 0 20px hsl(340 70% 55% / 0.5)", "0 0 40px hsl(340 70% 55% / 0.8)", "0 0 20px hsl(340 70% 55% / 0.5)"] }}
             transition={{ duration: 3, repeat: Infinity }}
           >
-            O Enigma do Laboratório
+            ChemScape
           </motion.h1>
           <p className="mt-3 font-narrative text-lg text-muted-foreground">
             Escolha seu personagem para começar a aventura...
