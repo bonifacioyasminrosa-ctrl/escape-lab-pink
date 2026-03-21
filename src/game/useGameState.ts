@@ -122,11 +122,7 @@ export function useGameState() {
         return { ...prev, errors: newErrors, cabinetSlots: newSlots };
       }
 
-      const allCorrect = newSlots.every(s => s.correct);
-      if (allCorrect) {
-        stopTimer();
-        return { ...prev, cabinetSlots: newSlots, phase: "victory" };
-      }
+      // Don't auto-transition to victory - let CabinetScreen handle it via its internal phases
       return { ...prev, cabinetSlots: newSlots };
     });
     return isCorrect;
