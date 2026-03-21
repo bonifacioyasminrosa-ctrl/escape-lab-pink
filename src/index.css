@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Architects+Daughter&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Architects+Daughter&family=Inter:wght@400;500;600;700&family=Courier+Prime:wght@400;700&display=swap');
 
 @layer base {
   :root {
@@ -53,7 +53,7 @@
 
     --font-display: 'Creepster', cursive;
     --font-narrative: 'Architects Daughter', cursive;
-    --font-body: 'Inter', sans-serif;
+    --font-body: 'Courier Prime', 'American Typewriter', 'Courier New', monospace;
 
     --shadow-glow-pink: 0 0 30px hsl(330 75% 55% / 0.3);
     --shadow-glow-green: 0 0 30px hsl(145 55% 38% / 0.3);
