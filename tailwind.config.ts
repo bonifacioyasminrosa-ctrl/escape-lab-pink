@@ -16,7 +16,7 @@ export default {
       fontFamily: {
         display: ['Creepster', 'cursive'],
         narrative: ['Architects Daughter', 'cursive'],
-        body: ['Inter', 'sans-serif'],
+        body: ['Courier Prime', 'American Typewriter', 'Courier New', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
