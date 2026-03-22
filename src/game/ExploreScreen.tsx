@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Clue, COLOR_LABELS, COLOR_EMOJI, LAB_HOTSPOTS } from "./gameData";
 import { X, Check, AlertTriangle, HelpCircle, FlaskConical, BookOpen } from "lucide-react";
+import ErlenLives from "./ErlenLives";
 import labPanorama from "@/assets/lab-panorama.jpg";
 
 interface ExploreScreenProps {
