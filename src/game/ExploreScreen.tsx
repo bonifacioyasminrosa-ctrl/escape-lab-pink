@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Clue, COLOR_LABELS, COLOR_EMOJI, LAB_HOTSPOTS } from "./gameData";
 import { X, Check, AlertTriangle, HelpCircle, FlaskConical, BookOpen } from "lucide-react";
+import ErlenLives from "./ErlenLives";
 import labPanorama from "@/assets/lab-panorama.jpg";
 
 interface ExploreScreenProps {
@@ -95,17 +96,8 @@ export default function ExploreScreen({
           <div className={`font-display text-xl ${timeLeft < 300 ? "text-destructive animate-flicker" : "text-primary"}`}>
             ⏱ {formatTime(timeLeft)}
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1">
-              {Array.from({ length: maxErrors }).map((_, i) => (
-                <motion.div
-                  key={i}
-                  className={`h-3 w-3 rounded-full ${i < errors ? "bg-destructive" : "bg-muted"}`}
-                  animate={i === errors - 1 && errors > 0 ? { scale: [1, 1.5, 1] } : {}}
-                  transition={{ duration: 0.3 }}
-                />
-              ))}
-            </div>
+            <div className="flex items-center gap-3">
+            <ErlenLives errors={errors} maxErrors={maxErrors} />
             <span className="text-xs text-muted-foreground font-narrative">
               {answeredClues.length}/8 pistas
             </span>
