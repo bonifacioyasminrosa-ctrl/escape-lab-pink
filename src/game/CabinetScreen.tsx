@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CabinetSlot, COLOR_LABELS, COLOR_EMOJI, GLASSWARE_OPTIONS, COMPOUND_OPTIONS } from "./gameData";
 import { GLASSWARE_IMAGES, COMPOUND_IMAGES } from "./assetMaps";
 import { Lock, Unlock, AlertTriangle, Check, Key, DoorOpen } from "lucide-react";
@@ -49,6 +49,9 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
   const [lastResult, setLastResult] = useState<{ color: string; correct: boolean } | null>(null);
   const [pouringSlotIndex, setPouringSlotIndex] = useState(0);
   const [fittedSlots, setFittedSlots] = useState<Set<string>>(new Set());
+  const selectedGlasswareRef = useRef("");
+  const selectedCompoundRef = useRef("");
+  const selectionLockedRef = useRef(false);
 
   const allCorrect = slots.every(s => s.correct);
   const allFitted = fittedSlots.size === 4;
@@ -60,26 +63,43 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
     }
   }, [allCorrect, cabinetPhase]);
 
-  // Handle per-slot validation
-  const handleConfirm = () => {
-    if (!activeSlot || !selectedGlassware || !selectedCompound) return;
-    const correct = onFillSlot(activeSlot, selectedGlassware, selectedCompound);
+  const resetActiveSelection = (closeModal: boolean) => {
+    if (closeModal) setActiveSlot(null);
+    selectedGlasswareRef.current = "";
+    selectedCompoundRef.current = "";
+    selectionLockedRef.current = false;
+    setSelectedGlassware("");
+    setSelectedCompound("");
+    setLastResult(null);
+  };
+
+  // Validate as soon as the player has picked one vidraria and one substance
+  const validateSelection = (glassware: string, compound: string) => {
+    if (!activeSlot || !glassware || !compound || selectionLockedRef.current) return;
+    selectionLockedRef.current = true;
+
+    const correct = onFillSlot(activeSlot, glassware, compound);
     setLastResult({ color: activeSlot, correct });
-    
+
     if (correct) {
-      setTimeout(() => {
-        setActiveSlot(null);
-        setSelectedGlassware("");
-        setSelectedCompound("");
-        setLastResult(null);
-      }, 1000);
+      setTimeout(() => resetActiveSelection(true), 850);
     } else {
-      setTimeout(() => {
-        setLastResult(null);
-        setSelectedGlassware("");
-        setSelectedCompound("");
-      }, 1500);
+      setTimeout(() => resetActiveSelection(false), 1200);
     }
+  };
+
+  const handleGlasswareSelect = (glassware: string) => {
+    if (selectionLockedRef.current) return;
+    selectedGlasswareRef.current = glassware;
+    setSelectedGlassware(glassware);
+    validateSelection(glassware, selectedCompoundRef.current);
+  };
+
+  const handleCompoundSelect = (compound: string) => {
+    if (selectionLockedRef.current) return;
+    selectedCompoundRef.current = compound;
+    setSelectedCompound(compound);
+    validateSelection(selectedGlasswareRef.current, compound);
   };
 
   // Pouring animation sequence
@@ -343,7 +363,7 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                   <label className="block text-sm font-medium text-muted-foreground mb-2">🧪 Vidraria:</label>
                   <div className="grid grid-cols-3 gap-2">
                     {GLASSWARE_OPTIONS.map(g => (
-                      <motion.button key={g.name} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setSelectedGlassware(g.name)} className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all ${selectedGlassware === g.name ? "border-primary bg-primary/20 ring-1 ring-primary" : "border-border bg-background hover:border-primary/50"}`}>
+                      <motion.button key={g.name} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleGlasswareSelect(g.name)} disabled={selectionLockedRef.current} className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all disabled:pointer-events-none disabled:opacity-70 ${selectedGlassware === g.name ? "border-primary bg-primary/20 ring-1 ring-primary" : "border-border bg-background hover:border-primary/50"}`}>
                         <img src={GLASSWARE_IMAGES[g.imageKey]} alt={g.name} className="h-10 w-10 object-contain" />
                         <span className="text-[8px] font-narrative text-foreground leading-tight text-center">{g.name}</span>
                       </motion.button>
@@ -355,7 +375,7 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                   <label className="block text-sm font-medium text-muted-foreground mb-2">⚗️ Composto:</label>
                   <div className="grid grid-cols-2 gap-2">
                     {COMPOUND_OPTIONS.map(c => (
-                      <motion.button key={c.name} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setSelectedCompound(c.name)} className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all ${selectedCompound === c.name ? "border-secondary bg-secondary/20 ring-1 ring-secondary" : "border-border bg-background hover:border-secondary/50"}`}>
+                      <motion.button key={c.name} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleCompoundSelect(c.name)} disabled={selectionLockedRef.current} className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all disabled:pointer-events-none disabled:opacity-70 ${selectedCompound === c.name ? "border-secondary bg-secondary/20 ring-1 ring-secondary" : "border-border bg-background hover:border-secondary/50"}`}>
                         <img src={COMPOUND_IMAGES[c.imageKey]} alt={c.name} className="h-12 w-12 object-contain" />
                         <span className="text-[8px] font-narrative text-foreground leading-tight text-center">{c.name}</span>
                       </motion.button>
@@ -371,11 +391,7 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                <div className="flex gap-3 pt-2">
-                  <button onClick={() => { setActiveSlot(null); setSelectedGlassware(""); setSelectedCompound(""); setLastResult(null); }} className="flex-1 rounded-lg border border-border py-2 text-muted-foreground hover:text-foreground font-narrative text-sm">Cancelar</button>
-                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleConfirm} disabled={!selectedGlassware || !selectedCompound} className="flex-1 rounded-lg bg-primary py-2 font-display text-sm text-primary-foreground disabled:opacity-40">Confirmar</motion.button>
-                </div>
+                <p className="pt-1 text-center text-[11px] font-narrative text-muted-foreground">A combinação é conferida automaticamente após escolher os dois itens.</p>
               </div>
             </motion.div>
           </motion.div>
