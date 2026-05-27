@@ -95,25 +95,26 @@ export function useGameState() {
     return correct;
   }, [state.clues, stopTimer]);
 
-  // Cabinet uses exact string comparison since user picks from buttons
+  // Cabinet validates against the fixed answer key and returns the result immediately
   const fillCabinetSlot = useCallback((color: string, glassware: string, compound: string): boolean => {
-    let isCorrect = false;
+    const answerSlot = INITIAL_CABINET_SLOTS.find(s => s.color === color);
+    if (!answerSlot) return false;
+
+    const isCorrect = normalize(glassware) === normalize(answerSlot.correctGlassware) &&
+      normalize(compound) === normalize(answerSlot.correctCompound);
+
     setState(prev => {
       const slot = prev.cabinetSlots.find(s => s.color === color);
       if (!slot) return prev;
 
-      // Direct comparison - user selects from predefined buttons
-      const correct = glassware === slot.correctGlassware && compound === slot.correctCompound;
-      isCorrect = correct;
-
       const newSlots = prev.cabinetSlots.map(s => {
-        if (s.color === color && correct) {
+        if (s.color === color && isCorrect) {
           return { ...s, glassware, compound, filled: true, correct: true };
         }
         return s;
       });
 
-      if (!correct) {
+      if (!isCorrect) {
         const newErrors = prev.errors + 1;
         if (newErrors >= prev.maxErrors) {
           stopTimer();
