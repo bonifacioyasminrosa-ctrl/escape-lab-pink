@@ -363,7 +363,7 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                   <label className="block text-sm font-medium text-muted-foreground mb-2">🧪 Vidraria:</label>
                   <div className="grid grid-cols-3 gap-2">
                     {GLASSWARE_OPTIONS.map(g => (
-                      <motion.button key={g.name} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setSelectedGlassware(g.name)} className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all ${selectedGlassware === g.name ? "border-primary bg-primary/20 ring-1 ring-primary" : "border-border bg-background hover:border-primary/50"}`}>
+                      <motion.button key={g.name} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleGlasswareSelect(g.name)} disabled={selectionLockedRef.current} className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all disabled:pointer-events-none disabled:opacity-70 ${selectedGlassware === g.name ? "border-primary bg-primary/20 ring-1 ring-primary" : "border-border bg-background hover:border-primary/50"}`}>
                         <img src={GLASSWARE_IMAGES[g.imageKey]} alt={g.name} className="h-10 w-10 object-contain" />
                         <span className="text-[8px] font-narrative text-foreground leading-tight text-center">{g.name}</span>
                       </motion.button>
@@ -375,7 +375,7 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                   <label className="block text-sm font-medium text-muted-foreground mb-2">⚗️ Composto:</label>
                   <div className="grid grid-cols-2 gap-2">
                     {COMPOUND_OPTIONS.map(c => (
-                      <motion.button key={c.name} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setSelectedCompound(c.name)} className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all ${selectedCompound === c.name ? "border-secondary bg-secondary/20 ring-1 ring-secondary" : "border-border bg-background hover:border-secondary/50"}`}>
+                      <motion.button key={c.name} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleCompoundSelect(c.name)} disabled={selectionLockedRef.current} className={`rounded-lg border p-2 flex flex-col items-center gap-1 transition-all disabled:pointer-events-none disabled:opacity-70 ${selectedCompound === c.name ? "border-secondary bg-secondary/20 ring-1 ring-secondary" : "border-border bg-background hover:border-secondary/50"}`}>
                         <img src={COMPOUND_IMAGES[c.imageKey]} alt={c.name} className="h-12 w-12 object-contain" />
                         <span className="text-[8px] font-narrative text-foreground leading-tight text-center">{c.name}</span>
                       </motion.button>
@@ -391,11 +391,7 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                <div className="flex gap-3 pt-2">
-                  <button onClick={() => { setActiveSlot(null); setSelectedGlassware(""); setSelectedCompound(""); setLastResult(null); }} className="flex-1 rounded-lg border border-border py-2 text-muted-foreground hover:text-foreground font-narrative text-sm">Cancelar</button>
-                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleConfirm} disabled={!selectedGlassware || !selectedCompound} className="flex-1 rounded-lg bg-primary py-2 font-display text-sm text-primary-foreground disabled:opacity-40">Confirmar</motion.button>
-                </div>
+                <p className="pt-1 text-center text-[11px] font-narrative text-muted-foreground">A combinação é conferida automaticamente após escolher os dois itens.</p>
               </div>
             </motion.div>
           </motion.div>
