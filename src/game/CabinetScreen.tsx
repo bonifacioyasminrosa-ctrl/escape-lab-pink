@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CabinetSlot, COLOR_LABELS, COLOR_EMOJI, GLASSWARE_OPTIONS, COMPOUND_OPTIONS } from "./gameData";
 import { GLASSWARE_IMAGES, COMPOUND_IMAGES } from "./assetMaps";
 import { Lock, Unlock, AlertTriangle, Check, Key, DoorOpen } from "lucide-react";
@@ -49,6 +49,9 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
   const [lastResult, setLastResult] = useState<{ color: string; correct: boolean } | null>(null);
   const [pouringSlotIndex, setPouringSlotIndex] = useState(0);
   const [fittedSlots, setFittedSlots] = useState<Set<string>>(new Set());
+  const selectedGlasswareRef = useRef("");
+  const selectedCompoundRef = useRef("");
+  const selectionLockedRef = useRef(false);
 
   const allCorrect = slots.every(s => s.correct);
   const allFitted = fittedSlots.size === 4;
@@ -60,26 +63,43 @@ export default function CabinetScreen({ slots, errors, maxErrors, timeLeft, play
     }
   }, [allCorrect, cabinetPhase]);
 
-  // Handle per-slot validation
-  const handleConfirm = () => {
-    if (!activeSlot || !selectedGlassware || !selectedCompound) return;
-    const correct = onFillSlot(activeSlot, selectedGlassware, selectedCompound);
+  const resetActiveSelection = (closeModal: boolean) => {
+    if (closeModal) setActiveSlot(null);
+    selectedGlasswareRef.current = "";
+    selectedCompoundRef.current = "";
+    selectionLockedRef.current = false;
+    setSelectedGlassware("");
+    setSelectedCompound("");
+    setLastResult(null);
+  };
+
+  // Validate as soon as the player has picked one vidraria and one substance
+  const validateSelection = (glassware: string, compound: string) => {
+    if (!activeSlot || !glassware || !compound || selectionLockedRef.current) return;
+    selectionLockedRef.current = true;
+
+    const correct = onFillSlot(activeSlot, glassware, compound);
     setLastResult({ color: activeSlot, correct });
-    
+
     if (correct) {
-      setTimeout(() => {
-        setActiveSlot(null);
-        setSelectedGlassware("");
-        setSelectedCompound("");
-        setLastResult(null);
-      }, 1000);
+      setTimeout(() => resetActiveSelection(true), 850);
     } else {
-      setTimeout(() => {
-        setLastResult(null);
-        setSelectedGlassware("");
-        setSelectedCompound("");
-      }, 1500);
+      setTimeout(() => resetActiveSelection(false), 1200);
     }
+  };
+
+  const handleGlasswareSelect = (glassware: string) => {
+    if (selectionLockedRef.current) return;
+    selectedGlasswareRef.current = glassware;
+    setSelectedGlassware(glassware);
+    validateSelection(glassware, selectedCompoundRef.current);
+  };
+
+  const handleCompoundSelect = (compound: string) => {
+    if (selectionLockedRef.current) return;
+    selectedCompoundRef.current = compound;
+    setSelectedCompound(compound);
+    validateSelection(selectedGlasswareRef.current, compound);
   };
 
   // Pouring animation sequence
