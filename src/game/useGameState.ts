@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { GameState, CLUES, INITIAL_CABINET_SLOTS, AvatarType, Difficulty } from "./gameData";
 
-const GAME_TIME = 30 * 60;
+const GAME_TIME = 15 * 60;
 
 function normalize(s: string) {
   return s.toLowerCase().trim()

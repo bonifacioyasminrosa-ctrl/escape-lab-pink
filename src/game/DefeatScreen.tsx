@@ -45,9 +45,9 @@ export default function DefeatScreen({ playerName, reason, onRestart }: DefeatSc
         <div className="space-y-4 font-narrative text-lg leading-relaxed text-foreground">
           {reason === "time" ? (
             <>
-              <p>O cronômetro zerou. As luzes do laboratório se apagam por um momento e, quando acendem, a porta está aberta.</p>
-              <p>Mas não foi {playerName} quem abriu... Foi a professora, que retornou e encontrou você tentando resolver os enigmas.</p>
-              <p className="text-muted-foreground italic">"Da próxima vez," ela diz com um sorriso, "estude mais as funções inorgânicas."</p>
+              <p>Os 15 minutos acabaram. {playerName} não conseguiu abrir a porta a tempo.</p>
+              <p>As luzes dos corredores se apagam uma a uma: a escola fechou e você ficou trancado no laboratório.</p>
+              <p className="text-muted-foreground italic">Agora só resta esperar que alguém venha te encontrar...</p>
             </>
           ) : (
             <>
