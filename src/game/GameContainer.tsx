@@ -1,5 +1,6 @@
 import { useGameState } from "./useGameState";
 import AvatarSelectScreen from "./AvatarSelectScreen";
+import DifficultySelectScreen from "./DifficultySelectScreen";
 import NameInputScreen from "./NameInputScreen";
 import IntroScreen from "./IntroScreen";
 import ExploreScreen from "./ExploreScreen";
@@ -10,7 +11,7 @@ import { AnimatePresence } from "framer-motion";
 
 export default function GameContainer() {
   const {
-    state, setAvatar, setPlayerName, goToPhase,
+    state, setAvatar, setDifficulty, setPlayerName, goToPhase,
     findClue, answerClue, fillCabinetSlot,
     toggleHint, resetGame,
   } = useGameState();
@@ -22,6 +23,16 @@ export default function GameContainer() {
           key="avatar"
           onSelect={(avatar) => {
             setAvatar(avatar);
+            goToPhase("difficulty");
+          }}
+        />
+      )}
+
+      {state.phase === "difficulty" && (
+        <DifficultySelectScreen
+          key="difficulty"
+          onSelect={(difficulty) => {
+            setDifficulty(difficulty);
             goToPhase("name");
           }}
         />
@@ -55,6 +66,7 @@ export default function GameContainer() {
           maxErrors={state.maxErrors}
           timeLeft={state.timeLeft}
           showHint={state.showHint}
+          difficulty={state.difficulty}
           onFindClue={findClue}
           onAnswerClue={answerClue}
           onGoToCabinet={() => goToPhase("cabinet")}
