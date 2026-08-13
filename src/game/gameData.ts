@@ -1,4 +1,5 @@
 export type AvatarType = "boy" | "girl";
+export type Difficulty = "facil" | "dificil";
 
 export interface Clue {
   id: number;
@@ -7,13 +8,15 @@ export interface Clue {
   question: string;
   answer: string;
   alternateAnswers: string[];
+  options?: string[];
   found: boolean;
   answered: boolean;
 }
 
 export interface GameState {
-  phase: "avatar" | "name" | "intro" | "explore" | "cabinet" | "victory" | "defeat";
+  phase: "avatar" | "difficulty" | "name" | "intro" | "explore" | "cabinet" | "victory" | "defeat";
   avatar: AvatarType;
+  difficulty: Difficulty;
   playerName: string;
   clues: Clue[];
   errors: number;
@@ -22,6 +25,7 @@ export interface GameState {
   cabinetSlots: CabinetSlot[];
   showHint: boolean;
 }
+
 
 export interface CabinetSlot {
   color: "red" | "blue" | "yellow" | "green";
