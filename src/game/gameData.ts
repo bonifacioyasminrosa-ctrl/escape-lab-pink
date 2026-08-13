@@ -43,6 +43,7 @@ export const CLUES: Clue[] = [
     question: "Tenho formato cônico, fundo chato e um gargalo estreito. Sou muito usado em titulações porque meu formato facilita a agitação sem risco de derramar. Qual é o meu nome?",
     answer: "Erlenmeyer",
     alternateAnswers: ["erlenmeyer", "erlemeyer", "erlenmeier"],
+    options: ["Erlenmeyer", "Béquer", "Proveta", "Funil"],
     found: false, answered: false,
   },
   {
@@ -50,6 +51,7 @@ export const CLUES: Clue[] = [
     question: "Sou um ácido forte, muito usado na indústria e na limpeza de metais. Minha fórmula é HCl. Qual é meu nome?",
     answer: "Ácido clorídrico",
     alternateAnswers: ["acido cloridrico", "ácido cloridrico", "acido clorídrico", "hcl", "Acido cloridrico"],
+    options: ["Ácido sulfúrico", "Ácido clorídrico", "Ácido nítrico", "Ácido fosfórico"],
     found: false, answered: false,
   },
   {
@@ -57,6 +59,7 @@ export const CLUES: Clue[] = [
     question: "Sou um recipiente cilíndrico com fundo chato, usado para aquecer líquidos ou fazer reações. Tenho uma boca larga. Quem sou eu?",
     answer: "Béquer",
     alternateAnswers: ["bequer", "becker", "béquer", "beaker", "beker", "Becker", "Bequer", "Beaker", "Beker"],
+    options: ["Pipeta", "Tubo de ensaio", "Béquer", "Erlenmeyer"],
     found: false, answered: false,
   },
   {
@@ -64,6 +67,7 @@ export const CLUES: Clue[] = [
     question: "Sou uma base forte, conhecida como soda cáustica, usada na fabricação de sabão. Minha fórmula é NaOH. Qual é meu nome?",
     answer: "Hidróxido de sódio",
     alternateAnswers: ["hidroxido de sodio", "hidróxido de sodio", "hidroxido de sódio", "naoh", "soda caustica", "soda cáustica", "Hidroxido de sodio", "NaOH"],
+    options: ["Hidróxido de cálcio", "Hidróxido de potássio", "Hidróxido de sódio", "Hidróxido de magnésio"],
     found: false, answered: false,
   },
   {
@@ -71,6 +75,7 @@ export const CLUES: Clue[] = [
     question: "Sou um tubo alongado, aberto em uma das extremidades, usado para conter pequenas amostras ou fazer reações em pequena escala.",
     answer: "Tubo de ensaio",
     alternateAnswers: ["tubo de ensaio", "Tubo de Ensaio"],
+    options: ["Tubo de ensaio", "Pisseta", "Proveta", "Vidro de relógio"],
     found: false, answered: false,
   },
   {
@@ -78,6 +83,7 @@ export const CLUES: Clue[] = [
     question: "Sou o sal de cozinha, essencial para a vida e para temperar alimentos. Minha fórmula é NaCl. Qual é meu nome?",
     answer: "Cloreto de sódio",
     alternateAnswers: ["cloreto de sodio", "nacl", "sal de cozinha", "sal", "NaCl", "Cloreto de Sodio"],
+    options: ["Sulfato de cálcio", "Nitrato de potássio", "Cloreto de sódio", "Carbonato de cálcio"],
     found: false, answered: false,
   },
   {
@@ -85,6 +91,7 @@ export const CLUES: Clue[] = [
     question: "Tenho formato arredondado e fundo chato, usado para aquecer líquidos por longos períodos, comum em destilações.",
     answer: "Balão",
     alternateAnswers: ["balao", "balão de fundo chato", "balao de fundo chato", "balão volumétrico", "balao volumetrico", "Balao"],
+    options: ["Vidro de relógio", "Balão", "Béquer", "Funil"],
     found: false, answered: false,
   },
   {
@@ -92,6 +99,7 @@ export const CLUES: Clue[] = [
     question: "Sou um gás incolor essencial para a fotossíntese, produzido na respiração e na combustão. Minha fórmula é CO₂. Qual é meu nome?",
     answer: "Dióxido de carbono",
     alternateAnswers: ["dioxido de carbono", "co2", "gas carbonico", "gás carbônico", "CO2", "Dioxido de carbono", "Dioxido de Carbono"],
+    options: ["Óxido de cálcio", "Óxido de ferro III", "Dióxido de carbono", "Óxido de enxofre VI"],
     found: false, answered: false,
   },
 ];
