@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Creepster', 'cursive'],
-        narrative: ['Architects Daughter', 'cursive'],
-        body: ['Courier Prime', 'American Typewriter', 'Courier New', 'monospace'],
+        display: ['Georgia', 'Times New Roman', 'serif'],
+        narrative: ['Georgia', 'Times New Roman', 'serif'],
+        body: ['Georgia', 'Times New Roman', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",

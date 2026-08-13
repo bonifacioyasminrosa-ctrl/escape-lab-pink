@@ -51,9 +51,9 @@
     --clue-yellow: 45 90% 55%;
     --clue-green: 140 60% 42%;
 
-    --font-display: 'Creepster', cursive;
-    --font-narrative: 'Architects Daughter', cursive;
-    --font-body: 'Courier Prime', 'American Typewriter', 'Courier New', monospace;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-narrative: Georgia, 'Times New Roman', serif;
+    --font-body: Georgia, 'Times New Roman', serif;
 
     --shadow-glow-pink: 0 0 30px hsl(330 75% 55% / 0.3);
     --shadow-glow-green: 0 0 30px hsl(145 55% 38% / 0.3);
