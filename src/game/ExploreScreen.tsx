@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Clue, COLOR_LABELS, COLOR_EMOJI, LAB_HOTSPOTS } from "./gameData";
+import { Clue, COLOR_LABELS, COLOR_EMOJI, LAB_HOTSPOTS, Difficulty } from "./gameData";
 import { X, Check, AlertTriangle, HelpCircle, FlaskConical, BookOpen } from "lucide-react";
 import ErlenLives from "./ErlenLives";
 import labPanorama from "@/assets/lab-panorama.jpg";
@@ -11,6 +11,7 @@ interface ExploreScreenProps {
   maxErrors: number;
   timeLeft: number;
   showHint: boolean;
+  difficulty: Difficulty;
   onFindClue: (id: number) => void;
   onAnswerClue: (id: number, answer: string) => boolean;
   onGoToCabinet: () => void;
@@ -42,7 +43,7 @@ function formatTime(seconds: number) {
 }
 
 export default function ExploreScreen({
-  clues, errors, maxErrors, timeLeft, showHint,
+  clues, errors, maxErrors, timeLeft, showHint, difficulty,
   onFindClue, onAnswerClue, onGoToCabinet, onToggleHint,
 }: ExploreScreenProps) {
   const [activeClue, setActiveClue] = useState<Clue | null>(null);
@@ -53,9 +54,10 @@ export default function ExploreScreen({
   const answeredClues = clues.filter(c => c.answered);
   const allAnswered = answeredClues.length === clues.length;
 
-  const handleAnswer = () => {
-    if (!activeClue || !answer.trim()) return;
-    const correct = onAnswerClue(activeClue.id, answer);
+  const handleAnswer = (value?: string) => {
+    const submitted = value ?? answer;
+    if (!activeClue || !submitted.trim()) return;
+    const correct = onAnswerClue(activeClue.id, submitted);
     setFeedback(correct ? "correct" : "wrong");
     if (correct) {
       setTimeout(() => {
@@ -281,24 +283,39 @@ export default function ExploreScreen({
                 💡 Lembre-se: a cor desta pista ({COLOR_EMOJI[activeClue.color]}) será importante depois!
               </p>
 
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={answer}
-                  onChange={e => setAnswer(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleAnswer()}
-                  placeholder="Sua resposta..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  autoFocus
-                />
-                <button
-                  onClick={handleAnswer}
-                  disabled={!answer.trim()}
-                  className="w-full rounded-lg bg-primary py-2 font-display text-sm text-primary-foreground disabled:opacity-40"
-                >
-                  Responder
-                </button>
-              </div>
+              {difficulty === "facil" && activeClue.options ? (
+                <div className="grid gap-2">
+                  {activeClue.options.map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => handleAnswer(opt)}
+                      disabled={feedback === "correct"}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-left font-narrative text-sm text-foreground transition-colors hover:border-primary hover:bg-game-surface-light disabled:opacity-50"
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={answer}
+                    onChange={e => setAnswer(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleAnswer()}
+                    placeholder="Sua resposta..."
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => handleAnswer()}
+                    disabled={!answer.trim()}
+                    className="w-full rounded-lg bg-primary py-2 font-display text-sm text-primary-foreground disabled:opacity-40"
+                  >
+                    Responder
+                  </button>
+                </div>
+              )}
 
               <AnimatePresence>
                 {feedback === "correct" && (

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { GameState, CLUES, INITIAL_CABINET_SLOTS, AvatarType } from "./gameData";
+import { GameState, CLUES, INITIAL_CABINET_SLOTS, AvatarType, Difficulty } from "./gameData";
 
 const GAME_TIME = 30 * 60;
 
@@ -12,6 +12,7 @@ export function useGameState() {
   const [state, setState] = useState<GameState>({
     phase: "avatar",
     avatar: "boy",
+    difficulty: "dificil",
     playerName: "",
     clues: CLUES.map(c => ({ ...c })),
     errors: 0,
@@ -50,6 +51,10 @@ export function useGameState() {
 
   const setAvatar = useCallback((avatar: AvatarType) => {
     setState(prev => ({ ...prev, avatar }));
+  }, []);
+
+  const setDifficulty = useCallback((difficulty: Difficulty) => {
+    setState(prev => ({ ...prev, difficulty }));
   }, []);
 
   const setPlayerName = useCallback((name: string) => {
@@ -138,6 +143,7 @@ export function useGameState() {
     setState({
       phase: "avatar",
       avatar: "boy",
+      difficulty: "dificil",
       playerName: "",
       clues: CLUES.map(c => ({ ...c })),
       errors: 0,
@@ -151,6 +157,7 @@ export function useGameState() {
   return {
     state,
     setAvatar,
+    setDifficulty,
     setPlayerName,
     goToPhase,
     findClue,
